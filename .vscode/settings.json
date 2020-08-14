@@ -1,0 +1,10 @@
+{
+    "workbench.colorCustomizations": {
+        "[DevPro High Contrast]": {
+            "editor.background": "#0f0e14"
+        },
+        "activityBar.background": "#09304B",
+        "titleBar.activeBackground": "#0D436A",
+        "titleBar.activeForeground": "#F9FCFE"
+    }
+}
