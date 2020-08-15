@@ -19,7 +19,8 @@
 /**
  * Todo:
  *
- * ==> icons ainda não é promise.all
+ * ==> [ok] icons ainda não é promise.all
+ * ==> webpack option, usar webpack na chamada?
  */
 
 // REQUIRES ====================================================
@@ -35,44 +36,60 @@ const xml = require("xml-parse");
 const sass = require("sass");
 const UglifyCss = require("uglifycss");
 const { exit } = require("process");
-const package = require("./node_modules/winnetoujs/package.json");
+const package = require("winnetoujs/package.json");
 const watch = require("node-watch");
+const webpack = require("webpack");
 
 // ARGUMENTS ===================================================
 
-process.argv.forEach(function (val, index, array) {
-  if (index === 2) {
-    switch (val) {
-      case "--version":
-        console.log(package.version);
-        exit();
-        break;
+if (process.argv.length === 2) initializer();
+else {
+  process.argv.forEach(function (val, index, array) {
+    if (index === 2) {
+      switch (val) {
+        case "--version":
+          console.log(package.version);
+          exit();
+          break;
 
-      case "--v":
-        console.log(package.version);
-        exit();
-        break;
+        case "--v":
+          console.log(package.version);
+          exit();
+          break;
 
-      case "-version":
-        console.log(package.version);
-        exit();
-        break;
+        case "-version":
+          console.log(package.version);
+          exit();
+          break;
 
-      case "-v":
-        console.log(package.version);
-        exit();
-        break;
+        case "-v":
+          console.log(package.version);
+          exit();
+          break;
+
+        case "--webpack":
+          webpackBundleRelease();
+          break;
+
+        case "-webpack":
+          webpackBundleRelease();
+          break;
+
+        case "":
+          initializer();
+          break;
+      }
     }
-  }
-});
+  });
+}
 
 // GLOBAL VARIABLES =============================================
-//
 
 let idList = [],
-  Config,
   promisesCss = [],
+  Config,
   promisesConstructos = [],
+  promisesIcons = [],
   errorsCount = 0,
   warningCount = 0,
   fileCache = [],
@@ -82,9 +99,6 @@ let idList = [],
   res,
   transpileComplete = false,
   transpileIconsComplete = false;
-
-// INITIALIZER =================================================
-initializer();
 
 // DRAW METHODS ===============================================
 
@@ -313,7 +327,58 @@ drawWelcome();
 
 // #endregion
 
-// MAIN METHODS ================================================
+// WEBPACK METHODS ============================================
+
+async function webpackBundleRelease() {
+  await config();
+  configTest();
+
+  const compiler = webpack({
+    entry: Config.entry,
+    output: {
+      path: path.resolve(__dirname, Config.out),
+      filename: "winnetouBundle.min.js",
+    },
+    module: {
+      rules: [
+        {
+          test: /\.js$/,
+          use: {
+            loader: "babel-loader",
+            options: {
+              presets: [
+                [
+                  "@babel/preset-env",
+                  {
+                    targets:
+                      "last 2 Chrome versions, last 2 Firefox versions",
+                  },
+                ],
+              ],
+              plugins: [
+                "@babel/plugin-proposal-optional-chaining",
+                "@babel/plugin-proposal-nullish-coalescing-operator",
+                [
+                  "@babel/plugin-transform-runtime",
+                  {
+                    regenerator: true,
+                  },
+                ],
+                "@babel/plugin-proposal-class-properties",
+              ],
+            },
+          },
+        },
+      ],
+    },
+  });
+
+  compiler.run((e, s) => {
+    console.log(e, s.compilation.errors, s.compilation.warnings);
+  });
+}
+
+// WBR METHODS ================================================
 /**
  * Read file from cache with fallback to filesystem
  * @param  {string} filePath path of the file
@@ -409,19 +474,27 @@ function time() {
   drawText("in " + res + "ms", { color: "dim" });
 }
 
+async function config() {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let data = await fs.readFile("./win.config.js", "utf-8");
+      Config = fixedJson(data);
+      return resolve();
+    } catch (e) {
+      Config = {
+        constructosPath: "./constructos",
+        entry: "./js/app.js",
+        out: "./release",
+        folderName: "/",
+      };
+      Err.e003();
+      return resolve();
+    }
+  });
+}
+
 async function initializer() {
-  try {
-    let data = await fs.readFile("./win.config.js", "utf-8");
-    Config = fixedJson(data);
-  } catch (e) {
-    Config = {
-      constructosPath: "./constructos",
-      entry: "./js/app.js",
-      out: "./release",
-      folderName: "/",
-    };
-    Err.e003();
-  }
+  await config();
 
   configTest();
 
@@ -664,9 +737,7 @@ async function icons() {
     if (iconsPath) {
       let files = await recursive(iconsPath);
       for (let c = 0; c < files.length; c++) {
-        let transpiledIcon = await transpileIcon(files[c]);
-
-        constructoIcons += transpiledIcon;
+        promisesIcons.push(transpileIcon(files[c]));
       }
     }
 
@@ -675,22 +746,19 @@ async function icons() {
     if (coloredIconsPath) {
       let files = await recursive(coloredIconsPath);
       for (let c = 0; c < files.length; c++) {
-        let transpiledIcon = await transpileColoredIcon(files[c]);
-
-        constructoIcons += transpiledIcon;
+        promisesIcons.push(transpileColoredIcon(files[c]));
       }
     }
 
-    if (constructoIcons !== "") {
+    Promise.all(promisesIcons).then(async res => {
+      // console.log("res :>> ", res);
       await fs.outputFile(
         path.join(Config.constructosPath, "_icons.html"),
-        prettify(constructoIcons)
+        prettify(res.join("\n"))
       );
       transpileIconsComplete = true;
       return resolve();
-    } else {
-      return reject();
-    }
+    });
   });
 }
 
