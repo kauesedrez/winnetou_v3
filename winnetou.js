@@ -21,7 +21,7 @@ class _Winnetou extends WinnetouBase {
       icons_tropical: this.icons_tropical,
       coloredIcons_tropical: this.coloredIcons_tropical,
       divSimples: this.divSimples,
-      divSimples2: this.divSimples2,
+      bt: this.bt,
       slideScreen: this.slideScreen,
       screen: this.screen
     }
@@ -212,7 +212,9 @@ class _Winnetou extends WinnetouBase {
     }
     component = obj.code(elements);
     return obj;
-  } // ========================================
+  }
+
+  // ========================================
 
 
 
@@ -220,23 +222,22 @@ class _Winnetou extends WinnetouBase {
   /**
    * 
    * @param {object} elements
-   * @param {any} elements.texto 
+   * @param {any} elements.action 
+   * @param {any} elements.text 
    * @param {object} [options]
    * @param {any=} options.identifier
    * @private
    */
-  divSimples2 = (elements, options) => {
+  bt = (elements, options) => {
 
     let identifier = this._getIdentifier(options ? options.identifier || 'notSet' : 'notSet');
 
-    elements = this._test(identifier, 'divSimples2', `divSimples2-win-${identifier}`, elements);
+    elements = this._test(identifier, 'bt', `bt-win-${identifier}`, elements);
     let component;
     let obj = {
       code(elements) {
         return `
-  <div id="divSimples2-win-${identifier}">
-    ${(elements?.texto)}
-  </div>
+  <button onclick="${(elements?.action)}" id="bt-win-${identifier}">${(elements?.text)}</button>
 `
       },
 
@@ -252,7 +253,7 @@ class _Winnetou extends WinnetouBase {
         this.create(component, output, options);
         return {
           ids: {
-            divSimples2: `divSimples2-win-${identifier}`,
+            bt: `bt-win-${identifier}`,
           },
         }
       }

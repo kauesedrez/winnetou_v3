@@ -1,0 +1,1 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[1],{3:function(n,t,o){"use strict";o.r(t),o.d(t,"Texto",(function(){return s}));o(1);class s{print(){return"olá class texto"}}}}]);

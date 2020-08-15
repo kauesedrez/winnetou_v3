@@ -19,8 +19,22 @@
 /**
  * Todo:
  *
+ * ==> quando define algo no win.config.js e
+ *      a pasta não existe
+ *      acontece um erro, tem que tratar
+ *      esses error
  * ==> [ok] icons ainda não é promise.all
  * ==> webpack option, usar webpack na chamada?
+ * ==> Configuração de saída
+ *    --> targets
+ * ==> Poder importar do win.config.js as configs
+ *      para o webpack
+ * ==> map
+ * ==> script loads if necessary
+ * https://webpack.js.org/guides/lazy-loading/
+ * vou usar isso, importantíssimo
+ * https://dzone.com/articles/lazy-loading-es2015-modules-in-the-browser
+ * https://webpack.js.org/guides/code-splitting/
  */
 
 // REQUIRES ====================================================
@@ -329,6 +343,11 @@ drawWelcome();
 
 // WEBPACK METHODS ============================================
 
+/**
+ * TODO:
+ * browser compatibility lazy load
+ */
+
 async function webpackBundleRelease() {
   await config();
   configTest();
@@ -336,9 +355,12 @@ async function webpackBundleRelease() {
   const compiler = webpack({
     entry: Config.entry,
     output: {
-      path: path.resolve(__dirname, Config.out),
+      chunkFilename: "[name].bundle.js",
       filename: "winnetouBundle.min.js",
+      path: path.resolve(__dirname, Config.out),
+      publicPath: path.join(Config.out, "/"),
     },
+    mode: "production",
     module: {
       rules: [
         {
