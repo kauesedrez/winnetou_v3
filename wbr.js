@@ -24,7 +24,7 @@
  *      acontece um erro, tem que tratar
  *      esses error
  * ==> [ok] icons ainda não é promise.all
- * ==> webpack option, usar webpack na chamada?
+ * ==> [ok] webpack option, usar webpack na chamada?
  * ==> Configuração de saída
  *    --> targets
  * ==> Poder importar do win.config.js as configs

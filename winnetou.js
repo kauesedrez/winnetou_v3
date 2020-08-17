@@ -23,13 +23,25 @@ class _Winnetou extends WinnetouBase {
       divSimples: this.divSimples,
       bt: this.bt,
       slideScreen: this.slideScreen,
-      screen: this.screen
+      screen: this.screen,
+      load:this.load
+      
     }
   }
 
   // ========================================
+  /**
+   * @param {('./divsimples.js')} file constructo file
+   */
+  load = async file =>{
+    return new Promise(async (resolve,reject)=>{
+      
+      let i = await import(file)
 
+      resolve(i.default);
 
+    })
+  }
 
 
   /**

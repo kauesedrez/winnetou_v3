@@ -1,0 +1,12 @@
+==> Lazy Load
+Os constructos agora serão arquivos separados, para que possam ser importados com wait import. O wbr vai ler os arquivos html dos constructos (tanto no entry point dos constructos quanto no node_modules) e vai gerar os arquivos js dos constructos na pasta output dentro da pasta entry dos constructos.
+
+-> O problema das muitas requests...
+Se cada constructo for um js diferente pode acontecer de se ter muitas requests paralelas, travando o sistema e invalidando a rapidez esperada. o ideal seria os js serem de arquivos diferentes. page1.js, page2.js, contact.js, notifyPage.js, etc.
+
+-> O problema dos ícones...
+Todos os ícones ficam no mesmo arquivo. Teria que separar os icones por pastas e criar os arquivos de acordo com as pastas.
+
+==> usar gzip nos scripts
+
+==> testar com o bundler do webpack

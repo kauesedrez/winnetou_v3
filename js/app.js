@@ -1,5 +1,4 @@
 import { Constructos, Winnetou } from "../winnetou.js";
-// import { divSimples } from "../divsimples.js";
 
 let div = Constructos.divSimples({ texto: "Olá Ícones" }).create(
   "#app",
@@ -30,17 +29,44 @@ const loadModule = async () => {
   // let divSimples = new (await import("../divsimples.js")).divSimples()
   //   .constructo;
 
-  let divSimples = (await import("../divsimples.js")).default;
+  let divs = await import("../constructos/output/divsimples.js");
 
-  divSimples({ texto: "Minha nossa!" }).create("#app");
+  divs.divSimples({ texto: "ola mundo" }).create("#app");
+
+  divs.bt({ text: "ola", action: "" }).create("#app");
+
+  let f = divSimples({ texto: "Minha nossa!" }).create("#app");
   divSimples({ texto: "Minha nossa2!" }).create("#app");
   divSimples({ texto: "Minha nossa3!" }).create("#app");
+
+  let colore = (await import("./divSimples.js")).colore;
+
+  colore(f.ids.divSimples);
+};
+
+const loadModule2 = async () => {
+  let divSimples2 = (
+    await import("../constructos/output/divsimples.js")
+  ).default;
+
+  let a = divSimples2({
+    texto: "O que esta acontecendo?",
+  }).create("#app");
+
+  console.log(a.ids.divSimples);
 };
 
 //@ts-ignore
 window.loadModule = loadModule;
+//@ts-ignore
+window.loadModule2 = loadModule2;
 
 Constructos.bt({
   text: "Load module",
   action: "loadModule()",
+}).create("#app");
+
+Constructos.bt({
+  text: "Load module 2",
+  action: "loadModule2()",
 }).create("#app");
