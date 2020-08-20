@@ -580,7 +580,39 @@ function execPromisesConstructos() {
       /**
        * data[0].method
        * data[0].constructosList
+       * data [0].filePath
        */
+
+      // data.forEach(item => {});
+
+      // console.log("data :>> ", data);
+
+      for (let c = 0; c < data.length; c++) {
+        let item = data[c];
+
+        let out = `import { WinnetouBase } from "../../node_modules/winnetoujs/src/_winnetouBase.js";\n\n`;
+        out += item.class;
+        out += "\n\n";
+        out += item.exports.join("\n");
+
+        let resultadoFinal = beautify(out, {
+          indent_size: 2,
+          space_in_empty_paren: true,
+        });
+
+        let fileName = path.parse(item.filePath).name;
+
+        await fs.writeFile(
+          `./constructos/output/${fileName}.js`,
+          resultadoFinal
+        );
+
+        // console.log("out :>> ", out);
+      }
+
+      transpileComplete = true;
+
+      return resolve();
 
       let resultado = "";
       let constructos = [];
@@ -668,6 +700,11 @@ function watchFiles() {
       Config.constructosPath,
       { recursive: true },
       async function (evt, name) {
+        console.log("transpileComplete :>> ", transpileComplete);
+        console.log(
+          "transpileIconsComplete :>> ",
+          transpileIconsComplete
+        );
         if (transpileComplete && transpileIconsComplete) {
           transpileComplete = false;
           transpileIconsComplete = false;
@@ -758,6 +795,12 @@ async function icons() {
 
     if (iconsPath) {
       let files = await recursive(iconsPath);
+
+      // aqui tenho o path do icone
+      // preciso saber das subpastas
+
+      console.log("files :>> ", files);
+
       for (let c = 0; c < files.length; c++) {
         promisesIcons.push(transpileIcon(files[c]));
       }
@@ -774,12 +817,52 @@ async function icons() {
 
     Promise.all(promisesIcons).then(async res => {
       // console.log("res :>> ", res);
-      await fs.outputFile(
-        path.join(Config.constructosPath, "_icons.html"),
-        prettify(res.join("\n"))
-      );
-      transpileIconsComplete = true;
-      return resolve();
+
+      // tenho que trabalhar o res
+      // e separar por arquivos
+
+      let splitter = [];
+      splitter["icons"] = [];
+
+      res.forEach(item => {
+        if (typeof item == "object") {
+          // do stuff
+
+          let s = item.iconPath.split("/");
+
+          if (s.length > 2) {
+            if (!splitter[s[1]]) splitter[s[1]] = [];
+            splitter[s[1]].push(item.symbol);
+          } else {
+            splitter["icons"].push(item.symbol);
+          }
+        }
+      });
+
+      console.log("splitter :>> ", splitter);
+
+      let finalPromise = [];
+
+      Object.keys(splitter).forEach(key => {
+        finalPromise.push(
+          fs.outputFile(
+            path.join(
+              Config.constructosPath,
+              `_icons${key != "icons" ? "_" + key : ""}.html`
+            ),
+            prettify(splitter[key].join("\n"))
+          )
+        );
+      });
+
+      // await fs.outputFile(
+      //   path.join(Config.constructosPath, "_icons.html"),
+      //   prettify(res.join("\n"))
+      // );
+      Promise.all(finalPromise).then(res => {
+        transpileIconsComplete = true;
+        return resolve();
+      });
     });
   });
 }
@@ -819,7 +902,7 @@ async function transpileIcon(iconPath) {
         symbol += `</svg></winnetou>`;
 
         drawAdd(iconPath);
-        return resolve(symbol);
+        return resolve({ symbol, iconPath });
       } else {
         return reject();
       }
@@ -830,14 +913,14 @@ async function transpileIcon(iconPath) {
   });
 }
 
-async function transpileColoredIcon(iconsPath) {
+async function transpileColoredIcon(iconPath) {
   return new Promise(async (resolve, reject) => {
     try {
-      let xmlString = await readFileCache(iconsPath);
+      let xmlString = await readFileCache(iconPath);
 
       let regPath = /[a-zA-Z]+/g;
 
-      let id = iconsPath.match(regPath);
+      let id = iconPath.match(regPath);
 
       id = id.filter(x => x != "svg");
 
@@ -862,13 +945,13 @@ async function transpileColoredIcon(iconsPath) {
 
         symbol += `</svg></winnetou>`;
 
-        drawAdd(iconsPath);
-        return resolve(symbol);
+        drawAdd(iconPath);
+        return resolve({ symbol, iconPath });
       } else {
         return reject();
       }
     } catch (e) {
-      drawAddError(iconsPath);
+      drawAddError(iconPath);
       return resolve("");
     }
   });
@@ -1045,13 +1128,14 @@ async function transpileConstructo(filePath) {
 
           jsdoc += "\t* @param {object} [options]\n";
           jsdoc += "\t* @param {any=} options.identifier\n";
-          jsdoc += "\t* @private\n";
+
           jsdoc += "\t*/\n";
 
           let _return =
+            `/**@private */
+          class ${id}_ extends WinnetouBase {` +
             jsdoc +
-            id +
-            " = (elements, options) => {" +
+            " constructo = (elements, options) => {" +
             "\n\nlet identifier = this._getIdentifier(options?options.identifier || 'notSet':'notSet');" +
             "\n\nelements = this._test(identifier,'" +
             id +
@@ -1086,19 +1170,24 @@ async function transpileConstructo(filePath) {
             "component = obj.code(elements);" +
             "return obj;" +
             // -------------------------
-            "}"; // method close
+            "}" + // constructo close
+            // ---------------------------
+            "}"; // class close
           // ---------------------------
 
           finalReturn += _return;
-          constructos.push(`${id}: this.${id}`);
+          constructos.push(
+            `export const ${id} = new ${id}_().constructo;`
+          );
         });
 
         return resolve({
-          method: beautify(finalReturn, {
+          class: beautify(finalReturn, {
             indent_size: 2,
             space_in_empty_paren: true,
           }),
-          constructosList: constructos,
+          exports: constructos,
+          filePath,
         });
       });
     } catch (e) {

@@ -3,10 +3,19 @@ Os constructos agora serão arquivos separados, para que possam ser importados c
 
 -> O problema das muitas requests...
 Se cada constructo for um js diferente pode acontecer de se ter muitas requests paralelas, travando o sistema e invalidando a rapidez esperada. o ideal seria os js serem de arquivos diferentes. page1.js, page2.js, contact.js, notifyPage.js, etc.
+-> usar gzip nos scripts
 
 -> O problema dos ícones...
 Todos os ícones ficam no mesmo arquivo. Teria que separar os icones por pastas e criar os arquivos de acordo com as pastas.
 
-==> usar gzip nos scripts
+==> livereload não está funcionando
+é problema dos icones que como nao esta definido no winconfig nunca entra na função e nunca se torna true
 
 ==> testar com o bundler do webpack
+
+==> E o css como fica? 
+Vai ter lazy load tbm? 
+
+==> Translate como fica?
+
+==> nomes duplicados

@@ -34,26 +34,11 @@ const loadModule = async () => {
   divs.divSimples({ texto: "ola mundo" }).create("#app");
 
   divs.bt({ text: "ola", action: "" }).create("#app");
-
-  let f = divSimples({ texto: "Minha nossa!" }).create("#app");
-  divSimples({ texto: "Minha nossa2!" }).create("#app");
-  divSimples({ texto: "Minha nossa3!" }).create("#app");
-
-  let colore = (await import("./divSimples.js")).colore;
-
-  colore(f.ids.divSimples);
 };
 
 const loadModule2 = async () => {
-  let divSimples2 = (
-    await import("../constructos/output/divsimples.js")
-  ).default;
-
-  let a = divSimples2({
-    texto: "O que esta acontecendo?",
-  }).create("#app");
-
-  console.log(a.ids.divSimples);
+  let ss = await import("../constructos/output/slideScreen.js");
+  ss.slideScreen().create("#app");
 };
 
 //@ts-ignore
