@@ -1,9 +1,9 @@
 import {
-  WinnetouBase
-} from "../../node_modules/winnetoujs/src/_winnetouBase.js";
+  Winnetou
+} from "../../node_modules/winnetoujs/src/winnetou.js";
 
 /**@private */
-class slideScreen_ extends WinnetouBase {
+class slideScreen_ extends Winnetou {
 
   // ========================================
 
@@ -50,7 +50,7 @@ class slideScreen_ extends WinnetouBase {
     return obj;
   }
 } /**@private */
-class screen_ extends WinnetouBase {
+class screen_ extends Winnetou {
 
   // ========================================
 

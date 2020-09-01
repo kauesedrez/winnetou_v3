@@ -1,9 +1,9 @@
 import {
-  WinnetouBase
-} from "../../node_modules/winnetoujs/src/_winnetouBase.js";
+  Winnetou
+} from "../../node_modules/winnetoujs/src/winnetou.js";
 
 /**@private */
-class icons_dark_delete_ extends WinnetouBase {
+class icons_dark_delete_ extends Winnetou {
 
   // ========================================
 

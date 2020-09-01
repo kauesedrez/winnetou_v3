@@ -1,21 +1,41 @@
 ==> Lazy Load
-Os constructos agora serão arquivos separados, para que possam ser importados com wait import. O wbr vai ler os arquivos html dos constructos (tanto no entry point dos constructos quanto no node_modules) e vai gerar os arquivos js dos constructos na pasta output dentro da pasta entry dos constructos.
+[ok] Os constructos agora serão arquivos separados, para que possam ser importados com wait import. O wbr vai ler os arquivos html dos constructos (tanto no entry point dos constructos quanto no node_modules) e vai gerar os arquivos js dos constructos na pasta output dentro da pasta entry dos constructos.
 
--> O problema das muitas requests...
+-> [ok] O problema das muitas requests...
 Se cada constructo for um js diferente pode acontecer de se ter muitas requests paralelas, travando o sistema e invalidando a rapidez esperada. o ideal seria os js serem de arquivos diferentes. page1.js, page2.js, contact.js, notifyPage.js, etc.
 -> usar gzip nos scripts
 
--> O problema dos ícones...
+-> [ok] O problema dos ícones...
 Todos os ícones ficam no mesmo arquivo. Teria que separar os icones por pastas e criar os arquivos de acordo com as pastas.
 
+==> [ok] mudar import para node module winnetou
+
 ==> livereload não está funcionando
-é problema dos icones que como nao esta definido no winconfig nunca entra na função e nunca se torna true
+Claro que não pois agora eu estou colocando o release dentro da própria pasta de constructos... Isso nunca vai dar certo por que o watch é recursivo.
+ [ok]é problema dos icones que como nao esta definido no winconfig nunca entra na função e nunca se torna true
+    --> [ok] Depois de alterar um arquivo o watch não segue funcionando.
+    --> [ok] Quando altera um constructo específico o watch deve refazer apenas o js daquele constructo e não de todos os constructos novamente. Isso acontece com tudo, ícones e estilos sass também. Como agora é gerado um arquivo js para cada constructo, só deve-se refazer aquele arquivo específico.
+        -> Ícones não tem como. Até teria mas vai dar muito trabalho.. Até daria pra fazer mas não se espera ficar alterando os ícones a todo instante então não se faz urgente e necessário.
+        -> O sass e o css não precisa pois o wbr já gera o bundle do css.
 
-==> testar com o bundler do webpack
+==> [ok] testar com o bundler do webpack
 
-==> E o css como fica? 
-Vai ter lazy load tbm? 
+==> [ok] E o css como fica? 
+Vai ter lazy load tbm? Não, não nativamente.
 
-==> Translate como fica?
+==> [ok] criar o repositorio do cedrosdev 
+-> [ok] apagar tudo no npm do kauesedrez
+-> [ok] [aguardando o prazo de 24 horas] repostar como cedrosdev
 
-==> nomes duplicados
+==>[ok] nomes duplicados
+
+
+==> [ok] Translate como fica?
+    --> [ok] Fazer o watch para a tradução
+
+
+==> Pegar todas as alterações desta pasta de trabalho (wbr, etc) e colocar o repositorio oficial do winnetou.
+
+==> Começar um projeto novo limpo, para continuar construindo o wbr.
+
+==> recriar a wiki dos constructos pois está tudo muito diferente e é capaz que eu proprio me esqueça de como se usa.

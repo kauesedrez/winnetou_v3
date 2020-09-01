@@ -1,9 +1,9 @@
 import {
-  WinnetouBase
-} from "../../node_modules/winnetoujs/src/_winnetouBase.js";
+  Winnetou
+} from "../../node_modules/winnetoujs/src/winnetou.js";
 
 /**@private */
-class divSimples_ extends WinnetouBase {
+class divSimples_ extends Winnetou {
 
   // ========================================
 
@@ -27,6 +27,7 @@ class divSimples_ extends WinnetouBase {
       code(elements) {
         return `
   <div id="divSimples-win-${identifier}">
+    <h1 style="color: red">It Works! 10</h1>
     ${(elements?.texto)}
   </div>
 `
@@ -53,7 +54,7 @@ class divSimples_ extends WinnetouBase {
     return obj;
   }
 } /**@private */
-class bt_ extends WinnetouBase {
+class bt_ extends Winnetou {
 
   // ========================================
 
@@ -65,7 +66,6 @@ class bt_ extends WinnetouBase {
    * @param {object} elements
    * @param {any} elements.action 
    * @param {any} elements.text 
-   * @param {any} elements.a 
    * @param {object} [options]
    * @param {any=} options.identifier
    */
@@ -78,9 +78,7 @@ class bt_ extends WinnetouBase {
     let obj = {
       code(elements) {
         return `
-  <button onclick="${(elements?.action)}" id="bt-win-${identifier}">
-    ${(elements?.text)}${(elements?.a)}
-  </button>
+  <button onclick="${(elements?.action)}" id="bt-win-${identifier}">${(elements?.text)}</button>
 `
       },
 

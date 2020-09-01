@@ -445,7 +445,7 @@ const Err = {
    * @param  {string} originalFile
    */
   e001(id, filePath, originalFile) {
-    drawError(
+    drawWarning(
       "Error code: e001\n" +
         `The constructo [[${id}]] of file "${filePath}" is duplicated. The original file is "${originalFile}".`
     );
@@ -523,6 +523,9 @@ async function initializer() {
   if (Config?.css || Config?.sass) await css();
 
   if (Config?.icons || Config?.coloredIcons) await icons();
+  else transpileIconsComplete = true;
+
+  if (Config?.defaultLang) translate();
 
   await constructos();
 
@@ -533,8 +536,14 @@ async function initializer() {
   watchFiles();
 }
 
-async function constructos() {
-  return new Promise((resolve, reject) => {
+async function constructos(name) {
+  return new Promise(async (resolve, reject) => {
+    if (name) {
+      promisesConstructos.push(transpileConstructo(name));
+      drawAdd(name);
+      return resolve(await execPromisesConstructos());
+    }
+
     const constructosPath = Config.constructosPath;
 
     recursive(constructosPath, async (err, files) => {
@@ -583,14 +592,10 @@ function execPromisesConstructos() {
        * data [0].filePath
        */
 
-      // data.forEach(item => {});
-
-      // console.log("data :>> ", data);
-
       for (let c = 0; c < data.length; c++) {
         let item = data[c];
 
-        let out = `import { WinnetouBase } from "../../node_modules/winnetoujs/src/_winnetouBase.js";\n\n`;
+        let out = `import { Winnetou } from "../../node_modules/winnetoujs/src/winnetou.js";\n\n`;
         out += item.class;
         out += "\n\n";
         out += item.exports.join("\n");
@@ -602,77 +607,13 @@ function execPromisesConstructos() {
 
         let fileName = path.parse(item.filePath).name;
 
-        await fs.writeFile(
-          `./constructos/output/${fileName}.js`,
-          resultadoFinal
+        let pathOut = path.join(
+          Config.constructosOut,
+          `${fileName}.js`
         );
 
-        // console.log("out :>> ", out);
+        await fs.outputFile(pathOut, resultadoFinal);
       }
-
-      transpileComplete = true;
-
-      return resolve();
-
-      let resultado = "";
-      let constructos = [];
-
-      data.forEach(constructoMethods => {
-        resultado += constructoMethods.method;
-        constructos.push(constructoMethods.constructosList);
-      });
-
-      // tradução
-      let translate_;
-      if (Config?.defaultLang) {
-        translate_ = await translate();
-      }
-
-      let resultadoFinal = `
-      import {WinnetouBase} from  "./node_modules/winnetoujs/src/_winnetouBase.js";
-
-      /**
-       * WinnetouJs Main Class
-       * 
-       */
-      //@ts-ignore
-      class _Winnetou extends WinnetouBase {
-        constructor(){
-          super();
-
-          ${translate_ ? translate_.res : ""}
-
-          /**
-           * Object containing all available constructos. 
-           * @private */
-          this.Constructos = {
-            ${constructos.filter(x => x.length > 0).join(",")}
-          }
-        }
-
-          ${resultado}
-        
-      }
-
-      // @ts-ignore
-      export const Winnetou = new _Winnetou();
-      // @ts-ignore
-      export const Constructos = Winnetou.Constructos;
-      /**
-       * Object containing all available constructos. 
-      ${translate_ ? translate_.jsdoc : ""}
-      */
-      // @ts-ignore
-      export const Strings = Winnetou.strings;
-
-  `;
-
-      resultadoFinal = beautify(resultadoFinal, {
-        indent_size: 2,
-        space_in_empty_paren: true,
-      });
-
-      await fs.writeFile("./winnetou.js", resultadoFinal);
 
       transpileComplete = true;
 
@@ -687,10 +628,26 @@ function watchFiles() {
     idList = [];
     promisesConstructos = [];
     promisesCss = [];
+    promisesIcons = [];
     errorsCount = 0;
     warningCount = 0;
     init = new Date().getTime();
   };
+
+  if (Config.defaultLang) {
+    // lang watcher
+
+    // @ts-ignore
+    watch(`./translations`, { recursive: true }, async function (
+      evt,
+      name
+    ) {
+      refresh(name);
+      await translate();
+      time();
+      drawFinal();
+    });
+  }
 
   if (Config.constructosPath) {
     // constructors watcher
@@ -700,17 +657,11 @@ function watchFiles() {
       Config.constructosPath,
       { recursive: true },
       async function (evt, name) {
-        console.log("transpileComplete :>> ", transpileComplete);
-        console.log(
-          "transpileIconsComplete :>> ",
-          transpileIconsComplete
-        );
         if (transpileComplete && transpileIconsComplete) {
           transpileComplete = false;
-          transpileIconsComplete = false;
 
           refresh(name);
-          await constructos();
+          await constructos(name);
           time();
           drawFinal();
         }
@@ -799,8 +750,6 @@ async function icons() {
       // aqui tenho o path do icone
       // preciso saber das subpastas
 
-      console.log("files :>> ", files);
-
       for (let c = 0; c < files.length; c++) {
         promisesIcons.push(transpileIcon(files[c]));
       }
@@ -838,8 +787,6 @@ async function icons() {
           }
         }
       });
-
-      console.log("splitter :>> ", splitter);
 
       let finalPromise = [];
 
@@ -967,8 +914,8 @@ async function translate() {
       return reject({ err: "erro" });
     }
 
-    if (Config.folderName === "/") Config.folderName = "";
-    Config.folderName = path.join(
+    // if (Config.folderName === "/") Config.folderName = "";
+    let folderName = path.join(
       __dirname,
       Config.folderName,
       "/translations"
@@ -978,7 +925,7 @@ async function translate() {
     let jsdoc = "";
 
     fs.readFile(
-      `${Config.folderName}/${Config.defaultLang}.xml`,
+      `${folderName}/${Config.defaultLang}.xml`,
       "utf-8",
       function (err, data) {
         let trad = xml.parse(data)[0].childNodes;
@@ -998,17 +945,41 @@ async function translate() {
 
         let res = `
         
-          /**
-           * Object containing the strings taken from the translation file    
-           * @private       
-          */
           this.strings = {
             ${strings}
           }
         
         `;
 
-        return resolve({ res, jsdoc });
+        let resFinal = `
+        import { Winnetou } from "../node_modules/winnetoujs/src/winnetou.js";
+        class Strings_ extends Winnetou{
+          constructor(){
+            super();
+            ${res}
+          }
+        }
+        const S=new Strings_();
+
+        /**
+         * Object containing the strings taken from the translation file${jsdoc}
+        */
+        // @ts-ignore
+        export const Strings = S.strings;
+
+        `;
+
+        fs.outputFile(
+          "./js/_strings.js",
+          beautify(resFinal, {
+            indent_size: 2,
+            space_in_empty_paren: true,
+          }),
+          function (err) {
+            drawAdd("Strings");
+            return resolve({ res, jsdoc });
+          }
+        );
       }
     );
   });
@@ -1133,7 +1104,7 @@ async function transpileConstructo(filePath) {
 
           let _return =
             `/**@private */
-          class ${id}_ extends WinnetouBase {` +
+          class ${id}_ extends Winnetou {` +
             jsdoc +
             " constructo = (elements, options) => {" +
             "\n\nlet identifier = this._getIdentifier(options?options.identifier || 'notSet':'notSet');" +

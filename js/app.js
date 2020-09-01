@@ -1,57 +1,37 @@
-import { Constructos, Winnetou } from "../winnetou.js";
+import { divSimples, bt } from "./constructos/componentes.js";
 
-let div = Constructos.divSimples({ texto: "Olá Ícones" }).create(
-  "#app",
-  {
-    clear: true,
+import { bt as bt2 } from "./constructos/componentes2.js";
+
+import { Strings } from "./_strings.js";
+
+import { W } from "../node_modules/winnetoujs/src/winnetou.js";
+
+W.lang(Strings, render);
+
+function render() {
+  divSimples({ texto: Strings.titulo }).create("#app");
+
+  divSimples({ texto: "teste" }).create("#app");
+
+  divSimples({ texto: "teste 2" }).create("#app");
+
+  bt({ text: "Load Module", action: "loadModule()" }).create("#app");
+
+  bt2({ text: "Trocar para portugues", action: "pt()" }).create(
+    "#app"
+  );
+
+  async function loadModule() {
+    let icons = await import("./constructos/_icons.js");
+    icons.icons_delete().create("#app");
   }
-);
 
-Constructos.coloredIcons_tropical().create("#app");
+  //@ts-ignore
+  window.loadModule = loadModule;
+  //@ts-ignore
+  window.pt = pt;
+}
 
-// new divSimples()
-//   .divSimples({ texto: "teste div simples" })
-//   .create("#app");
-
-// setTimeout(() => {
-//   import("./class1.js").then(({ default: Texto }) => {
-//     let texto = new Texto().print();
-//     Constructos.divSimples({ texto }).create("#app");
-//   });
-// }, 5000);
-
-const loadModule = async () => {
-  // let class1 = await import("./class1.js");
-  // let texto = new class1.Texto();
-
-  // Constructos.divSimples({ texto: texto.print() }).create("#app");
-
-  // let divSimples = new (await import("../divsimples.js")).divSimples()
-  //   .constructo;
-
-  let divs = await import("../constructos/output/divsimples.js");
-
-  divs.divSimples({ texto: "ola mundo" }).create("#app");
-
-  divs.bt({ text: "ola", action: "" }).create("#app");
-};
-
-const loadModule2 = async () => {
-  let ss = await import("../constructos/output/slideScreen.js");
-  ss.slideScreen().create("#app");
-};
-
-//@ts-ignore
-window.loadModule = loadModule;
-//@ts-ignore
-window.loadModule2 = loadModule2;
-
-Constructos.bt({
-  text: "Load module",
-  action: "loadModule()",
-}).create("#app");
-
-Constructos.bt({
-  text: "Load module 2",
-  action: "loadModule2()",
-}).create("#app");
+function pt() {
+  W.changeLang("pt-br");
+}
